@@ -1,11 +1,25 @@
 from django.shortcuts import render
 from django.http import Http404
 from django.core.paginator import EmptyPage,PageNotAnInteger, Paginator
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
+from django.views.decorators.http import require_POST
 from .models import Post
 from django.views.generic import ListView
 from .forms import EmailPostForm
 from django.core.mail import send_mail
+
+@require_POST 
+def post_comment(request, post_id):
+   post=get_object_or_404( Post, id=post_id, status=Post.Status.PUBLISHED)
+   comment=None #a comment was posted
+   form=CommentForm(data=request.POST)
+
+   if form.is_valid(): #create comment object without saving it to the database
+      comment=form.save(comment=False) #Assign the post to the comment
+      comment.post =post #Save the comment to the database
+      comment.save()
+      #The save() method is available for ModelForm but not for Form instances since they are not linked to any model.
+      return render(request, 'blog/post/comment.html',{'post':post, 'form': form, 'comment':comment} )
 
 
 class PostListView(ListView):
@@ -32,7 +46,7 @@ def post_list(request):
 def post_detail(request, year, month, day, post):
     post=get_object_or_404(Post, id=id, status=Post.Status.PUBLISHED, slug=post,publish_year=year, publish_month=month,publish_day=day)
 
-    return render(request, 'blog/post/detail.html', {'post': post})
+    return render(request, 'detail.html', {'post': post})
 
 def post_share(request, post_id):
    post=get_object_or_404(Post, id=post_id,status=Post.Status.PUBLISHED)
