@@ -14,6 +14,22 @@
         <p>
             <a href="{% url 'blog:post_share' post.id %}">Share this post</a>
         </p>
+ {% with comments.count as total_comments  %}
+    <h2>{{ total_comments}} comment{{total_comments|pluralize }}</h2>
+{% endwith %} 
+    <!-- The {% with %} template tag is useful for avoiding hitting the database or accessing expensive methods multiple times.
+     -->
+     {% for comment in comments %} 
+     <div class="comment"> 
+         <p class="info">
+             Comment {{ forloop.counter }} by {{ comment.name }} {{ comment.created }} 
+         </p> 
+         {{ comment.body|linebreaks }} 
+     </div> 
+ {% empty %} 
+     <p>There are no comments.</p> 
+ {% endfor %} 
+ {% endblock %}
 
     </p>
 {% endblock %}
